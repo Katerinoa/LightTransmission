@@ -6,7 +6,7 @@
 //#include"ImgDecode.h"
 
 
-int FileToPhoto(const char* filePath, const char* videoPath, int timLim = INT_MAX, int fps = 15)
+int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MAX, int fps = 15)
 {
 	FILE* fp = fopen(filePath, "rb");
 	if (fp == nullptr) return 1;
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 {
 	const char* filepath = "test.bin";
 	const char* videopath = "test_video.mp4";
-	FileToPhoto(filepath, videopath);
+	FileToVideo(filepath, videopath);
 	return 0;
 }
 
