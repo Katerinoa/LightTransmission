@@ -28,13 +28,13 @@ int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MA
 }
 
 
-int main(int argc, char* argv[])
-{
-	const char* filepath = "test.bin";
-	const char* videopath = "test_video.mp4";
-	FileToVideo(filepath, videopath);
-	return 0;
-}
+//int main(int argc, char* argv[])
+//{
+//	const char* filepath = "test.bin";
+//	const char* videopath = "test_video.mp4";
+//	FileToVideo(filepath, videopath);
+//	return 0;
+//}
 
 /*
 int main(int argc, char* argv[])
@@ -60,29 +60,29 @@ int main(int argc, char* argv[])
 */
 
 //该主函数用于测试二维码的定位和裁剪
-//int main() {
-//	for (int i = 0; i < 15; i++)
-//	{
-//		char imgName[256];
-//		//snprintf(imgName, 256, "C:\\Users\\TingLans\\Desktop\\outputImg\\%05d.png", i);
-//		snprintf(imgName, 256, "C:\\Users\\TingLans\\Desktop\\myImg\\%05d.png", i);
-//
-//
-//		cv::Mat srcImg = cv::imread(imgName, 1), disImg;
-//
-//		if (srcImg.empty()) {
-//			std::cerr << "Failed to open image file" << std::endl;
-//			return 1;
-//		}
-//
-//		ImgParse::Main(srcImg, disImg);
-//
-//		cv::imshow("disImg", srcImg);
-//		cv::waitKey(0);
-//		cv::imshow("disImg", disImg);
-//		cv::waitKey(0);
-//
-//
-//	}
-//	return 0;
-//}
+int main() {
+	for (int i = 0; i < 15; i++)
+	{
+		char imgName[256];
+		//snprintf(imgName, 256, "C:\\Users\\TingLans\\Desktop\\outputImg\\%05d.png", i);
+		snprintf(imgName, 256, "C:\\Users\\TingLans\\Desktop\\myImg\\%05d.jpg", i);
+
+
+		cv::Mat srcImg = cv::imread(imgName, 1), disImg;
+
+		if (srcImg.empty()) {
+			std::cerr << "Failed to open image file" << std::endl;
+			return 1;
+		}
+
+		ImgParse::Main(srcImg, disImg);
+
+		cv::imshow("disImg", srcImg);
+		cv::waitKey(0);
+		cv::imshow("disImg", disImg);
+		cv::waitKey(0);
+
+
+	}
+	return 0;
+}
