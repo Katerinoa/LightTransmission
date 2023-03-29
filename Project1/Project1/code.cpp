@@ -9,7 +9,7 @@
 }while (0);
 namespace Code
 {
-	constexpr int BytesPerFrame = 2340;
+	constexpr int BytesPerFrame = 2282;// 区域存放数据量
 	constexpr int FrameSize_h = 192;
 	constexpr int FrameSize_w = 108;
 
@@ -25,7 +25,7 @@ namespace Code
 		Vec3b(0,0,0),Vec3b(0,0,255),Vec3b(0,255,0),Vec3b(0,255,255),
 		Vec3b(255,0,0),Vec3b(255,0,255),Vec3b(255,255,0), Vec3b(255,255,255)
 	};
-	const int lenlim[RectAreaCount] = { 138,312,1404,144,312,16,8 };
+	const int lenlim[RectAreaCount] = { 138,312-8,1404-36,144,312-8,16,8 };
 	const int areapos[RectAreaCount][2][2] = //[2][2],第一维度代表高宽，第二维度代表左上角坐标
 	{
 		{{69,16},{QrPointSize + 3,SafeAreaWidth}},
@@ -63,6 +63,7 @@ namespace Code
 		}
 		return dis;
 	}
+	// 需修改——计算校验码————————————
 	uint16_t CalCheckCode(const unsigned char* info, int len, bool isStart, bool isEnd, uint16_t frameBase)
 	{
 		uint16_t ans = 0;
@@ -77,6 +78,7 @@ namespace Code
 		ans ^= temp;
 		return ans;
 	}
+	// 安全空白区域
 	void BulidSafeArea(Mat& mat)
 	{
 		for (int i = 0; i <= 1; i++)
@@ -100,65 +102,63 @@ namespace Code
 #endif
 		return;
 	}
-
-void BulidQrPoint(Mat& mat)
-{
-	//绘制大二维码识别点
-	constexpr int pointPos[4][2] =
+	// 识别点
+	void BulidQrPoint(Mat& mat)
 	{
-		{0,0},
-		{0,FrameSize_h - QrPointSize},
-		{FrameSize_w - QrPointSize,0}
-	};
-	const Vec3b vec3bBig[9] =
-	{
-		pixel[Black],
-		pixel[Black],
-		pixel[Black],
-		pixel[White],
-		pixel[White],
-		pixel[Black],
-		pixel[Black],
-		pixel[White],
-		pixel[White]
-	};
-	for (int i = 0; i < 3; ++i)
-		for (int j = 0; j < QrPointSize; ++j)
-			for (int k = 0; k < QrPointSize; ++k)
-				mat.at<Vec3b>(pointPos[i][0] + j, pointPos[i][1] + k) =
-				vec3bBig[(int)max(fabs(j - 8.5), fabs(k - 8.5))];
-	//绘制小二维码识别点
-	constexpr int posCenter[2] = { FrameSize_w - SmallQrPointbias,FrameSize_h - SmallQrPointbias };
-	const Vec3b vec3bsmall[5] =
-	{
-		pixel[Black],
-		pixel[Black],
-		pixel[White],
-		pixel[Black],
-		pixel[White],
-	};
-	for (int i = -4; i <= 4; ++i)
-		for (int j = -4; j <= 4; ++j)
-			mat.at<Vec3b>(posCenter[0] + i, posCenter[1] + j) =
-			vec3bsmall[max(abs(i), abs(j))];
-#ifdef Code_DEBUG
-	Show_Scale_Img(mat);
-#endif
-}
-
-
-void FillIn(Mat& mat)
-{
-	int k = 0;
-	for (int i = 2; i < 106; i++)
-		for (int j = 170; j < 174; j++)
+		//绘制大二维码识别点
+		constexpr int pointPos[4][2] =
 		{
-			if ((k + i) % 2)mat.at<Vec3b>(i, j) = pixel[Black];
-         	k++;
-		}
-}
-	
-
+			{0,0},
+			{0,FrameSize_h - QrPointSize},
+			{FrameSize_w - QrPointSize,0}
+		};
+		const Vec3b vec3bBig[9] =
+		{
+			pixel[Black],
+			pixel[Black],
+			pixel[Black],
+			pixel[White],
+			pixel[White],
+			pixel[Black],
+			pixel[Black],
+			pixel[White],
+			pixel[White]
+		};
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < QrPointSize; ++j)
+				for (int k = 0; k < QrPointSize; ++k)
+					mat.at<Vec3b>(pointPos[i][0] + j, pointPos[i][1] + k) =
+					vec3bBig[(int)max(fabs(j - 8.5), fabs(k - 8.5))];
+		//绘制小二维码识别点
+		constexpr int posCenter[2] = { FrameSize_w - SmallQrPointbias,FrameSize_h - SmallQrPointbias };
+		const Vec3b vec3bsmall[5] =
+		{
+			pixel[Black],
+			pixel[Black],
+			pixel[White],
+			pixel[Black],
+			pixel[White],
+		};
+		for (int i = -4; i <= 4; ++i)
+			for (int j = -4; j <= 4; ++j)
+				mat.at<Vec3b>(posCenter[0] + i, posCenter[1] + j) =
+				vec3bsmall[max(abs(i), abs(j))];
+	#ifdef Code_DEBUG
+		Show_Scale_Img(mat);
+	#endif
+	}
+	// 没用的区域
+	void FillIn(Mat& mat)
+	{
+		int k = 0;
+		for (int i = 2; i < 106; i++)
+			for (int j = 170; j < 174; j++)
+			{
+				if ((k + i) % 2)mat.at<Vec3b>(i, j) = pixel[Black];
+         		k++;
+			}
+	}
+	// 需修改——————————
 	void BulidCheckCodeAndFrameNo(Mat& mat, uint16_t checkcode, uint16_t FrameNo)
 	{
 		for (int i = 0; i < 16; ++i)
@@ -243,15 +243,15 @@ void FillIn(Mat& mat)
 		Mat codeMat = Mat(FrameSize_w, FrameSize_h, CV_8UC3, Vec3d(255, 255, 255));   ///bbb
 		if (frameType != FrameType::End && frameType != FrameType::StartAndEnd)
 			tailLen = BytesPerFrame;
-		BulidSafeArea(codeMat);
-		BulidQrPoint(codeMat);
-		FillIn(codeMat);
+		BulidSafeArea(codeMat);// 安全区域
+		BulidQrPoint(codeMat);// 识别点
+		FillIn(codeMat);// 无用区域
 
 		int checkCode = CalCheckCode((const unsigned char*)info, tailLen,
 			frameType == FrameType::Start || frameType == FrameType::StartAndEnd,
-			frameType == FrameType::End || frameType == FrameType::StartAndEnd, FrameNo);
-		BulidFrameFlag(codeMat, frameType, tailLen);
-		BulidCheckCodeAndFrameNo(codeMat, checkCode, FrameNo % 65536);
+			frameType == FrameType::End || frameType == FrameType::StartAndEnd, FrameNo);// 计算无用校验码-56807
+		BulidFrameFlag(codeMat, frameType, tailLen);// 帧类型和数据量
+		BulidCheckCodeAndFrameNo(codeMat, checkCode, FrameNo % 65536);// 校验码和帧号
 		if (tailLen != BytesPerFrame)
 			tailLen = BytesPerFrame;
 		for (int i = 0; i < RectAreaCount && tailLen>0; ++i)

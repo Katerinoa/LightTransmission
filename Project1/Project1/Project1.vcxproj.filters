@@ -30,12 +30,24 @@
     <ClCompile Include="parser.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ErrorCode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ImgDecode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="code.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="parser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorCode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ImgDecode.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

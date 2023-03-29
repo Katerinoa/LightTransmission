@@ -727,7 +727,7 @@ namespace ImgParse
 		// TODO: 此处需修改尺寸
 		for (int i = 0; i < 1080; ++i)
 		{
-			for (int j = 0; j < 1080; ++j)
+			for (int j = 0; j < 1920; ++j)
 			{
 				Vec3b& temp = mat.at<Vec3b>(i, j);
 				float sum = (temp[0] + temp[1] + temp[2]) / 3.0;

@@ -1,11 +1,17 @@
 //主函数
-#include"parser.h"
 #include <iostream>
+#include"parser.h"
 #include"code.h"
 #include"ffmpeg.h"
 #include"ErrorCode.h"
 #include"ImgDecode.h"
+using namespace std;
 
+#define Show_Img(src) do\
+{\
+	cv::imshow("DEBUG", src);\
+	cv::waitKey();\
+}while (0);
 //视频转图片
 int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MAX, int fps = 15)
 {
@@ -23,6 +29,7 @@ int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MA
 	system("md outputImg");
 	temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// 海明码
 	Code::Main(temp, size, "outputImg", "png", 1LL * fps * timLim / 1000);  //删除了一个变量
+
 	FFMPEG::ImagetoVideo("outputImg", "png", videoPath, fps, 60, 100000);
 	system("rd /s /q outputImg");
 	free(temp);
@@ -45,6 +52,7 @@ int VideoToFile(const char* videoPath, const char* filePath)
 	bool hasStarted = 0;
 	// ret指明是否出现跳帧
 	bool ret = 0;
+	while(!isThreadOver){}
 	for (int i = 1;; ++i, system((std::string("del ") + imgName).c_str()))
 	{
 		printf("Reading Image %05d.jpg\n", i);
@@ -68,9 +76,15 @@ int VideoToFile(const char* videoPath, const char* filePath)
 		{
 			continue;
 		}
-		// Show_Img(disImg);
+		//Show_Img(disImg);
 		ImageDecode::ImageInfo imageInfo;
 		bool ans = ImageDecode::Main(disImg, imageInfo);
+		/*int num = 0;
+		for (int i = 0; i < imageInfo.Info.size(); ++i) {
+			if (temp[i] != imageInfo.Info[i])
+				num++;
+		}
+		cout << num;*/
 		if (ans)
 		{
 			continue;
@@ -115,14 +129,32 @@ int VideoToFile(const char* videoPath, const char* filePath)
 		return ret;
 	}
 	exit(1);
+	return 0;
 }
 
 
 int main(int argc, char* argv[])
 {
 	const char* filepath = "test.bin";
-	const char* videopath = "test_video.mp4";
-	FileToVideo(filepath, videopath);
+
+	const char* videopath = "1080_60.mp4";
+	const char* filepath1 = "test1.bin";
+	//FileToVideo(filepath, videopath);
+	// 测试视频转图片
+	VideoToFile(videopath, filepath1);
+	/*cv::Mat srcImg = cv::imread(filepath, 1),disImg;
+	cv::imshow("1", srcImg);
+	cv::waitKey(0);
+	ImgParse::Main(srcImg, disImg);
+	cv::imshow("1", disImg);
+	cv::waitKey(0);
+	ImageDecode::ImageInfo imageInfo;
+	bool ans = ImageDecode::Main(disImg, imageInfo);
+	std::cout << imageInfo.FrameBase << std::endl;*/
+	//system("rd /s /q inputImg");
+	//system("md inputImg");
+	// 设置一个新线程以完成视频到图片的转换
+	//FFMPEG::VideotoImage(videopath, "inputImg", "jpg");
 	return 0;
 }
 
@@ -151,11 +183,11 @@ int main(int argc, char* argv[])
 
 //该主函数用于测试二维码的定位和裁剪
 //int main() {
-//	for (int i = 0; i < 15; i++)
+//	for (int i = 1; i < 15; i++)
 //	{
 //		char imgName[256];
 //		//snprintf(imgName, 256, "C:\\Users\\TingLans\\Desktop\\outputImg\\%05d.png", i);
-//		snprintf(imgName, 256, "C:\\Users\\TingLans\\Desktop\\myImg\\%05d.png", i);
+//		snprintf(imgName, 256, "C:\\Users\\24365\\Desktop\\myImg\\%05d.jpg", i);
 //
 //
 //		cv::Mat srcImg = cv::imread(imgName, 1), disImg;
