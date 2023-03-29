@@ -142,7 +142,7 @@ namespace ImgParse
 		};
 		constexpr float MaxQRBWRate = 2.25, MinQRBWRate = 0.40;//识别点黑白比例限制（理想1.0）
 		constexpr int MinQRSize = 10;//最小识别点大小，模糊半径由图像尺寸动态判定
-		constexpr float MaxQRScale = 0.25, MinQRXYRate = 5.0 / 6.0, MaxQRXYRate = 6.0 / 5.0; //识别点长度占原图的最大比例，识别点的长宽比最小限制和最大限制
+		constexpr float MaxQRScale_height = 0.25, MaxQRScale_width = 0.15, MinQRXYRate = 5.0 / 6.0, MaxQRXYRate = 6.0 / 5.0; //识别点长度占原图的最大比例，识别点的长宽比最小限制和最大限制
 		//计算三个整数的方差
 		double Cal3NumVariance(const int a, const int b, const int c)
 		{
@@ -281,8 +281,7 @@ namespace ImgParse
 #else
 			if (qrSize.height < MinQRSize || qrSize.width < MinQRSize) //判断宽度和长度是否太小
 				return false;
-			// TODO: 此处需要修改 修改MaxQRScale，即qrSize.width / imgSize 的标准值 
-			if (qrSize.height / imgSize.height >= MaxQRScale || qrSize.width / imgSize.width >= MaxQRScale)
+			if (qrSize.height / imgSize.height >= MaxQRScale_height || qrSize.width / imgSize.width >= MaxQRScale_width)
 				return false;                                          //判断相对原图所占的比例是否太大
 			if (xYScale < MinQRXYRate || xYScale > MaxQRXYRate)        //判断长宽比是否失衡
 				return false;
@@ -311,27 +310,11 @@ namespace ImgParse
 		Mat ImgPreprocessing(const Mat& srcImg, float blurRate = 0.0005)
 		{
 			Mat tmpImg;
-			//彩色图转灰度图
-			/**
-			* 将输入图像从 BGR 颜色空间转换为灰度图像，并将结果存储在 tmpImg 中
-			* 在 OpenCV 中，将 BGR 图像转换为灰度图像可以使用 cvtColor 函数，并将参数 COLOR_BGR2GRAY 作为转换方式。该函数会将每个像素的 B、G、R 三个通道的值加权平均，并将结果作为灰度值输出
-			* gray = 0.299 * B + 0.587 * G + 0.114 * R
-			* 一般情况下，无法从灰度图像中完全恢复原始的彩色图像
-			**/
 			cvtColor(srcImg, tmpImg, COLOR_BGR2GRAY);
 #ifdef FIND_QRPOINT_DEBUG
 			Show_Img(tmpImg);
 #endif		
 			//模糊全图，减少高频信息的干扰（尤其是摩尔纹）
-			//实际上摩尔纹去除似乎还有更好的办法，考虑去掉一些高频率信息？
-			/**
-			* 在图像处理中，模糊操作（也称为滤波操作）可以去除图像中的噪声、平滑图像、模糊图像等。模糊核的大小决定了模糊的程度。
-			  其中一个常用的公式是根据图像尺寸和模糊程度来计算模糊核的大小，即：
-			  kernel_size = image_size * blur_rate
-			  其中 kernel_size 表示模糊核的大小，image_size 表示图像的大小，可以是图像的宽度或高度，blur_rate 表示模糊程度，是一个介于 0 和 1 之间的参数，表示模糊程度与图像大小之比。
-			  这个公式的基本原理是，当图像大小固定时，随着模糊程度的增加，模糊核的大小也应该相应增加，以保持合适的平滑效果。当图像大小不同的时候，根据实际需求和经验，可以调整 blur_rate 的值来得到适合的模糊核大小。
-			  这个公式只是一种经验性的方法，实际的应用中还需要根据具体的场景和需求进行调整。同时，在图像处理中还有很多其他的滤波算法和技术，例如高斯滤波、中值滤波、双边滤波等，也需要根据实际需求来选择合适的方法和参数。
-			**/
 			// TODO: 可以考虑采用更好的滤波方式
 			float BlurSize = 1.0 + srcImg.rows * blurRate; //计算图像模糊核的大小
 
@@ -339,9 +322,6 @@ namespace ImgParse
 #ifdef FIND_QRPOINT_DEBUG
 			Show_Img(tmpImg);
 #endif		
-			//二值化
-			//二值化通常是通过对灰度图像的阈值处理来实现的，即将灰度值大于某个阈值的像素设置为白色，其余像素设置为黑色
-			//二值化会导致图像信息的丢失，因为在二值化过程中，所有灰度值被简化为了 0 和 255 两种取值。因此，二值化通常只适用于那些在黑白两色之间有明显分界的图像，对于颜色丰富、细节复杂的图像，二值化可能会导致信息的损失和失真
 			threshold(tmpImg, tmpImg, 0, 255, THRESH_BINARY | THRESH_OTSU);
 #ifdef FIND_QRPOINT_DEBUG
 			Show_Img(tmpImg);
@@ -555,7 +535,6 @@ namespace ImgParse
 				)
 			);
 			pair<float, float> temp[4];
-			// TODO: 是否需要修改CalExtendVec?
 			for (int i = 0; i < 4; ++i)
 				temp[i] = CalExtendVec(ret[id[i][0]], ret[id[i][1]], ret[id[i][2]], avglen);
 			for (int i = 0; i < 4; ++i)
@@ -724,7 +703,6 @@ namespace ImgParse
 			}
 		}
 		float avg = (minVec[0] + maxVec[0] + minVec[1] + maxVec[1] + minVec[2] + maxVec[2]) / 6.0;
-		// TODO: 此处需修改尺寸
 		for (int i = 0; i < 1080; ++i)
 		{
 			for (int j = 0; j < 1920; ++j)
@@ -759,7 +737,6 @@ namespace ImgParse
 	{
 		int dis = 0;
 		int dir[4][2] = { {1,1},{-1,1},{1,-1},{-1,-1} };
-		// TODO: 此处需修改坐标
 		int poi[4][2] = { {0,0},{1079,0},{0,1919},{1079,1919} }; //角点的可能位置
 		vector<Point2f> ret;
 		for (int k = 0; k < 4; ++k)
@@ -793,7 +770,6 @@ namespace ImgParse
 	// 缩放图片
 	void Resize(Mat& mat)
 	{
-		// TODO: 此处需修改尺寸
 		Mat temp = Mat(108, 192, CV_8UC3);
 		for (int i = 0; i < 108; ++i)
 		{
@@ -861,12 +837,12 @@ namespace ImgParse
 			//如果二阶裁剪失败根据一阶裁剪的信息返回一个不知道是否精确的结果。
 			//三阶微调，完成最终矫正
 			disImg.copyTo(temp);
-			//TODO: 此处需要修改尺寸
+			
 			cv::resize(temp, temp, Size(1920, 1080));
 			GetVec(temp);//锐化处理
 			auto poi4 = FindConner(temp); //手动寻找地位点
 			if (poi4.size() != 4) return 1;
-			//TODO: 此处需要修改尺寸
+			
 			cv::resize(disImg, disImg, Size(1920, 1080));
 			temp = CropParallelRect(disImg, poi4, Size(1920, 1080));
 		}
