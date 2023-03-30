@@ -14,4 +14,5 @@ namespace FFMPEG
 		unsigned outputFrameRates = 30,    //实际输出帧率（如果大于源帧率则插帧，小于源帧率则掉帧）
 		unsigned kbps = 0);                //帧率为kbps，默认为0，即ffmpeg自动决定帧率
 	//掉帧将会严重影响信息传输，故通常不应该出现输出帧率小于源帧率的情况。
+	int test(void);
 }

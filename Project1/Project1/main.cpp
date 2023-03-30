@@ -27,10 +27,13 @@ int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MA
 	fread(temp, 1, size, fp);
 	fclose(fp);
 	system("md outputImg");
-	temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// 海明码
-	Code::Main(temp, size, "outputImg", "png", 1LL * fps * timLim / 1000);  //删除了一个变量
+
+	//temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// 海明码
+
+	Code::Main(temp, size, "outputImg", "png", 1LL * fps * timLim / 1000);
 
 	FFMPEG::ImagetoVideo("outputImg", "png", videoPath, fps, 60, 100000);
+
 	system("rd /s /q outputImg");
 	free(temp);
 	return 0;
@@ -42,9 +45,10 @@ int VideoToFile(const char* videoPath, const char* filePath)
 	char imgName[256];
 	system("rd /s /q inputImg");
 	system("md inputImg");
-	// 设置一个新线程以完成视频到图片的转换
 	bool isThreadOver = false;
+
 	std::thread th([&] {FFMPEG::VideotoImage(videoPath, "inputImg", "jpg"); isThreadOver = true; });
+
 	// precode用于后续指明帧的编号，以判断是否出现跳帧，或者出现相同帧
 	int precode = -1;
 	std::vector<unsigned char> outputFile;
@@ -62,7 +66,6 @@ int VideoToFile(const char* videoPath, const char* filePath)
 		{
 			fp = fopen(imgName, "rb");
 		} while (fp == nullptr && !isThreadOver);
-
 		if (fp == nullptr)
 		{
 			puts("failed to open the video, is the video Incomplete?");
@@ -77,19 +80,14 @@ int VideoToFile(const char* videoPath, const char* filePath)
 			continue;
 		}
 		//Show_Img(disImg);
+
 		ImageDecode::ImageInfo imageInfo;
 		bool ans = ImageDecode::Main(disImg, imageInfo);
-		/*int num = 0;
-		for (int i = 0; i < imageInfo.Info.size(); ++i) {
-			if (temp[i] != imageInfo.Info[i])
-				num++;
-		}
-		cout << num;*/
+
 		if (ans)
 		{
 			continue;
 		}
-		// 判断是否为第一帧（由于拍摄的第一帧并不是所需内容的第一帧，所以需要过滤掉无用帧）
 		if (!hasStarted)
 		{
 			if (imageInfo.IsStart)
@@ -119,11 +117,13 @@ int VideoToFile(const char* videoPath, const char* filePath)
 	if (ret == 0)
 	{
 		th.join();	// 结束子线程
+
+		//ErrorCode::DecodeErrorCorrectionCode(outputFile);
+
+		outputFile.push_back('\0');
 		printf("\nVideo Parse is success.\nFile Size:%lldB\nTotal Frame:%d\n", outputFile.size(), precode);
 		FILE* fp = fopen(filePath, "wb");
 		if (fp == nullptr) return 1;
-		ErrorCode::DecodeErrorCorrectionCode(outputFile);
-		outputFile.push_back('\0');
 		fwrite(outputFile.data(), sizeof(unsigned char), outputFile.size() - 1, fp);
 		fclose(fp);
 		return ret;
@@ -135,28 +135,17 @@ int VideoToFile(const char* videoPath, const char* filePath)
 
 int main(int argc, char* argv[])
 {
-	const char* filepath = "test.bin";
-
-	const char* videopath = "1080_60.mp4";
+	//const char* filepath = "test.bin";
+	const char* videopath = "1.mp4";
 	const char* filepath1 = "test1.bin";
+
 	//FileToVideo(filepath, videopath);
-	// 测试视频转图片
 	VideoToFile(videopath, filepath1);
-	/*cv::Mat srcImg = cv::imread(filepath, 1),disImg;
-	cv::imshow("1", srcImg);
-	cv::waitKey(0);
-	ImgParse::Main(srcImg, disImg);
-	cv::imshow("1", disImg);
-	cv::waitKey(0);
-	ImageDecode::ImageInfo imageInfo;
-	bool ans = ImageDecode::Main(disImg, imageInfo);
-	std::cout << imageInfo.FrameBase << std::endl;*/
-	//system("rd /s /q inputImg");
-	//system("md inputImg");
-	// 设置一个新线程以完成视频到图片的转换
-	//FFMPEG::VideotoImage(videopath, "inputImg", "jpg");
 	return 0;
 }
+//int main() {
+//	//FFMPEG::test();
+//}
 
 /*
 int main(int argc, char* argv[])

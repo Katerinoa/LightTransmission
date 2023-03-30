@@ -317,8 +317,9 @@ namespace ImgParse
 			//模糊全图，减少高频信息的干扰（尤其是摩尔纹）
 			// TODO: 可以考虑采用更好的滤波方式
 			float BlurSize = 1.0 + srcImg.rows * blurRate; //计算图像模糊核的大小
+			float BlurSize_1 = 1.0 + srcImg.cols * blurRate; //计算图像模糊核的大小
 
-			blur(tmpImg, tmpImg, Size2f(BlurSize, BlurSize));
+			blur(tmpImg, tmpImg, Size2f(BlurSize, BlurSize_1));
 #ifdef FIND_QRPOINT_DEBUG
 			Show_Img(tmpImg);
 #endif		
@@ -844,10 +845,11 @@ namespace ImgParse
 			if (poi4.size() != 4) return 1;
 			
 			cv::resize(disImg, disImg, Size(1920, 1080));
-			temp = CropParallelRect(disImg, poi4, Size(1920, 1080));
+			temp = CropParallelRect(disImg, poi4, Size(1920, 1080));// TODO
 		}
 
 		disImg = temp;
+		//Show_Img(disImg);
 #ifdef FIND_QRPOINT_DEBUG
 		Show_Img(disImg);
 #endif 
