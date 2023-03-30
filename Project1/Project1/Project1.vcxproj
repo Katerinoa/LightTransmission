@@ -78,8 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>D:\WorkSoftware\openCV\opencv\build\include;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>D:\WorkSoftware\openCV\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>D:\CV\opencv\build\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>D:\CV\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -122,7 +122,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>D:\WorkSoftware\openCV\opencv\build\x64\vc15\lib\opencv_world460d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D:\CV\opencv\build\x64\vc15\lib\opencv_world460d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

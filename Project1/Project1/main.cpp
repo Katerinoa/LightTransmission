@@ -40,6 +40,7 @@ int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MA
 int VideoToFile(const char* videoPath, const char* filePath)
 {
 	char imgName[256];
+
 	system("rd /s /q inputImg");
 	system("md inputImg");
 	// 设置一个新线程以完成视频到图片的转换
@@ -133,35 +134,35 @@ int VideoToFile(const char* videoPath, const char* filePath)
 }
 
 
+//int main(int argc, char* argv[])
+//{
+//	const char* filepath = "test.bin";
+//
+//	const char* videopath = "1.mp4";
+//	const char* filepath1 = "test1.bin";
+//	//FileToVideo(filepath, videopath);
+//	// 测试视频转图片
+//	VideoToFile(videopath, filepath1);
+//	/*cv::Mat srcImg = cv::imread(filepath, 1),disImg;
+//	cv::imshow("1", srcImg);
+//	cv::waitKey(0);
+//	ImgParse::Main(srcImg, disImg);
+//	cv::imshow("1", disImg);
+//	cv::waitKey(0);
+//	ImageDecode::ImageInfo imageInfo;
+//	bool ans = ImageDecode::Main(disImg, imageInfo);
+//	std::cout << imageInfo.FrameBase << std::endl;*/
+//	//system("rd /s /q inputImg");
+//	//system("md inputImg");
+//	// 设置一个新线程以完成视频到图片的转换
+//	//FFMPEG::VideotoImage(videopath, "inputImg", "jpg");
+//	return 0;
+//}
+
+
 int main(int argc, char* argv[])
 {
-	const char* filepath = "test.bin";
-
-	const char* videopath = "1080_60.mp4";
-	const char* filepath1 = "test1.bin";
-	//FileToVideo(filepath, videopath);
-	// 测试视频转图片
-	VideoToFile(videopath, filepath1);
-	/*cv::Mat srcImg = cv::imread(filepath, 1),disImg;
-	cv::imshow("1", srcImg);
-	cv::waitKey(0);
-	ImgParse::Main(srcImg, disImg);
-	cv::imshow("1", disImg);
-	cv::waitKey(0);
-	ImageDecode::ImageInfo imageInfo;
-	bool ans = ImageDecode::Main(disImg, imageInfo);
-	std::cout << imageInfo.FrameBase << std::endl;*/
-	//system("rd /s /q inputImg");
-	//system("md inputImg");
-	// 设置一个新线程以完成视频到图片的转换
-	//FFMPEG::VideotoImage(videopath, "inputImg", "jpg");
-	return 0;
-}
-
-/*
-int main(int argc, char* argv[])
-{
-	constexpr bool type = false;
+	constexpr bool type = true;
 	//type==true 将文件编码为视频  命令行参数 ： 输入文件路径 输出视频路径 最长视频时长
 	//type==false 将视频编码为文件 命令行参数 ： 输入视频路径 输出图片路径
 	if constexpr(type)
@@ -179,7 +180,7 @@ int main(int argc, char* argv[])
 	puts("argument error,please check your argument");
 	return 1;
 }
-*/
+
 
 //该主函数用于测试二维码的定位和裁剪
 //int main() {
