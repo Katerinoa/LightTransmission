@@ -28,7 +28,7 @@ int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MA
 	fclose(fp);
 	system("md outputImg");
 
-	//temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// 海明码
+	temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// 海明码
 
 	Code::Main(temp, size, "outputImg", "png", 1LL * fps * timLim / 1000);
 
@@ -101,8 +101,8 @@ int VideoToFile(const char* videoPath, const char* filePath)
 		if (((precode + 1) & UINT16_MAX) != imageInfo.FrameBase)
 		{
 			puts("error, there is a skipped frame,there are some images parsed failed.");
-			ret = 1;
-			break;
+			/*ret = 1;
+			break;*/
 		}
 		printf("Frame %d is parsed!\n", imageInfo.FrameBase);
 
@@ -118,7 +118,7 @@ int VideoToFile(const char* videoPath, const char* filePath)
 	{
 		th.join();	// 结束子线程
 
-		//ErrorCode::DecodeErrorCorrectionCode(outputFile);
+		ErrorCode::DecodeErrorCorrectionCode(outputFile);
 
 		outputFile.push_back('\0');
 		printf("\nVideo Parse is success.\nFile Size:%lldB\nTotal Frame:%d\n", outputFile.size(), precode);
@@ -135,65 +135,11 @@ int VideoToFile(const char* videoPath, const char* filePath)
 
 int main(int argc, char* argv[])
 {
-	//const char* filepath = "test.bin";
-	const char* videopath = "1.mp4";
-	const char* filepath1 = "test1.bin";
+	const char* filepath = "test.bin";//要转换成视频的二进制文件
+	const char* videopath = "test.mp4";//要解析的视频文件
+	const char* filepath1 = "result.bin";//解析生成的二进制文件
 
-	//FileToVideo(filepath, videopath);
+	FileToVideo(filepath, videopath);
 	VideoToFile(videopath, filepath1);
 	return 0;
 }
-//int main() {
-//	//FFMPEG::test();
-//}
-
-/*
-int main(int argc, char* argv[])
-{
-	constexpr bool type = false;
-	//type==true 将文件编码为视频  命令行参数 ： 输入文件路径 输出视频路径 最长视频时长
-	//type==false 将视频编码为文件 命令行参数 ： 输入视频路径 输出图片路径
-	if constexpr(type)
-	{
-		if (argc == 4)
-			return FileToVideo(argv[1], argv[2], std::stoi(argv[3]));
-		else if (argc == 5)
-			return FileToVideo(argv[1], argv[2], std::stoi(argv[3]), std::stoi(argv[4]));
-	}
-	else
-	{
-		if (argc == 3)
-			return VideoToFile(argv[1], argv[2]);
-	}
-	puts("argument error,please check your argument");
-	return 1;
-}
-*/
-
-//该主函数用于测试二维码的定位和裁剪
-//int main() {
-//	for (int i = 1; i < 15; i++)
-//	{
-//		char imgName[256];
-//		//snprintf(imgName, 256, "C:\\Users\\TingLans\\Desktop\\outputImg\\%05d.png", i);
-//		snprintf(imgName, 256, "C:\\Users\\24365\\Desktop\\myImg\\%05d.jpg", i);
-//
-//
-//		cv::Mat srcImg = cv::imread(imgName, 1), disImg;
-//
-//		if (srcImg.empty()) {
-//			std::cerr << "Failed to open image file" << std::endl;
-//			return 1;
-//		}
-//
-//		ImgParse::Main(srcImg, disImg);
-//
-//		cv::imshow("disImg", srcImg);
-//		cv::waitKey(0);
-//		cv::imshow("disImg", disImg);
-//		cv::waitKey(0);
-//
-//
-//	}
-//	return 0;
-//}
