@@ -846,7 +846,6 @@ namespace ImgParse
 		GetVec(disImg);
 
 		Resize(disImg);
-
 #ifdef FIND_QRPOINT_DEBUG
 		Show_Img(disImg);
 #endif 

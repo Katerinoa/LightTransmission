@@ -1,5 +1,6 @@
 //主函数
 #include <iostream>
+#include <chrono>
 #include"parser.h"
 #include"code.h"
 #include"ffmpeg.h"
@@ -28,7 +29,7 @@ int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MA
 	fclose(fp);
 	system("md outputImg");
 
-	temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// 海明码
+	//temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// 海明码
 
 	Code::Main(temp, size, "outputImg", "png", 1LL * fps * timLim / 1000);
 
@@ -56,7 +57,7 @@ int VideoToFile(const char* videoPath, const char* filePath)
 	bool hasStarted = 0;
 	// ret指明是否出现跳帧
 	bool ret = 0;
-	while(!isThreadOver){}
+	std::this_thread::sleep_for(std::chrono::seconds(1)); // 让程序暂停1秒钟
 	for (int i = 1;; ++i, system((std::string("del ") + imgName).c_str()))
 	{
 		printf("Reading Image %05d.jpg\n", i);
@@ -101,8 +102,8 @@ int VideoToFile(const char* videoPath, const char* filePath)
 		if (((precode + 1) & UINT16_MAX) != imageInfo.FrameBase)
 		{
 			puts("error, there is a skipped frame,there are some images parsed failed.");
-			/*ret = 1;
-			break;*/
+			ret = 1;
+			break;
 		}
 		printf("Frame %d is parsed!\n", imageInfo.FrameBase);
 
@@ -118,7 +119,7 @@ int VideoToFile(const char* videoPath, const char* filePath)
 	{
 		th.join();	// 结束子线程
 
-		ErrorCode::DecodeErrorCorrectionCode(outputFile);
+		//ErrorCode::DecodeErrorCorrectionCode(outputFile);
 
 		outputFile.push_back('\0');
 		printf("\nVideo Parse is success.\nFile Size:%lldB\nTotal Frame:%d\n", outputFile.size(), precode);
@@ -135,11 +136,15 @@ int VideoToFile(const char* videoPath, const char* filePath)
 
 int main(int argc, char* argv[])
 {
-	const char* filepath = "test.bin";//要转换成视频的二进制文件
-	const char* videopath = "test.mp4";//要解析的视频文件
+	bool flag = 1;//0编码 1解码
+	const char* filepath = "E:\\Projects\\LightTransmission\\Project1\\Project1\\test\\01.bin";//要转换成视频的二进制文件
+	const char* videopath = "ShotVedio02.mp4";
 	const char* filepath1 = "result.bin";//解析生成的二进制文件
+	const char* videopath1 = "ShotVedio01.mp4";
 
-	FileToVideo(filepath, videopath);
-	VideoToFile(videopath, filepath1);
+	if (!flag)
+		FileToVideo(filepath, videopath, 5000, 20);
+	else
+		VideoToFile(videopath1, filepath1);
 	return 0;
 }
