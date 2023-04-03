@@ -63,7 +63,7 @@ namespace Code
 		}
 		return dis;
 	}
-	// 需修改——计算校验码————————————
+
 	uint16_t CalCheckCode(const unsigned char* info, int len, bool isStart, bool isEnd, uint16_t frameBase)
 	{
 		uint16_t ans = 0;
@@ -147,7 +147,7 @@ namespace Code
 		Show_Scale_Img(mat);
 	#endif
 	}
-	// 没用的区域
+
 	void FillIn(Mat& mat)
 	{
 		int k = 0;
@@ -158,7 +158,7 @@ namespace Code
          		k++;
 			}
 	}
-	// 需修改——————————
+
 	void BulidCheckCodeAndFrameNo(Mat& mat, uint16_t checkcode, uint16_t FrameNo)
 	{
 		for (int i = 0; i < 16; ++i)

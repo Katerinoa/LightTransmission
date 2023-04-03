@@ -13,7 +13,7 @@ using namespace std;
 	cv::waitKey();\
 }while (0);
 //视频转图片
-int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MAX, int fps = 10)
+int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MAX,bool useHamming=false,int fps = 10)
 {
 	FILE* fp = fopen(filePath, "rb");
 	if (fp == nullptr) return 1;
@@ -27,25 +27,27 @@ int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MA
 	fread(temp, 1, size, fp);
 	fclose(fp);
 	system("md outputImg");
-	temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// 海明码
-	Code::Main(temp, size, "outputImg", "png", 1LL * fps * timLim / 1000);  //删除了一个变量
+	if(useHamming)temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// 海明码
 
+	Code::Main(temp, size, "outputImg", "png", 1LL * fps * timLim / 1000);
 	FFMPEG::ImagetoVideo("outputImg", "png", videoPath, fps, 60, 100000);
+
 	system("rd /s /q outputImg");
 	free(temp);
 	return 0;
 }
 
 //视频转图片
-int VideoToFile(const char* videoPath, const char* filePath)
+int VideoToFile(const char* videoPath, const char* filePath,bool useHammingcode=false)
 {
 	char imgName[256];
 
 	system("rd /s /q inputImg");
 	system("md inputImg");
-	// 设置一个新线程以完成视频到图片的转换
 	bool isThreadOver = false;
+
 	std::thread th([&] {FFMPEG::VideotoImage(videoPath, "inputImg", "jpg"); isThreadOver = true; });
+
 	// precode用于后续指明帧的编号，以判断是否出现跳帧，或者出现相同帧
 	int precode = -1;
 	std::vector<unsigned char> outputFile;
@@ -63,7 +65,6 @@ int VideoToFile(const char* videoPath, const char* filePath)
 		{
 			fp = fopen(imgName, "rb");
 		} while (fp == nullptr && !isThreadOver);
-
 		if (fp == nullptr)
 		{
 			puts("failed to open the video, is the video Incomplete?");
@@ -78,19 +79,14 @@ int VideoToFile(const char* videoPath, const char* filePath)
 			continue;
 		}
 		//Show_Img(disImg);
+
 		ImageDecode::ImageInfo imageInfo;
 		bool ans = ImageDecode::Main(disImg, imageInfo);
-		/*int num = 0;
-		for (int i = 0; i < imageInfo.Info.size(); ++i) {
-			if (temp[i] != imageInfo.Info[i])
-				num++;
-		}
-		cout << num;*/
+
 		if (ans)
 		{
 			continue;
 		}
-		// 判断是否为第一帧（由于拍摄的第一帧并不是所需内容的第一帧，所以需要过滤掉无用帧）
 		if (!hasStarted)
 		{
 			if (imageInfo.IsStart)
@@ -104,8 +100,8 @@ int VideoToFile(const char* videoPath, const char* filePath)
 		if (((precode + 1) & UINT16_MAX) != imageInfo.FrameBase)
 		{
 			puts("error, there is a skipped frame,there are some images parsed failed.");
-			ret = 1;
-			break;
+			/*ret = 1;
+			break;*/
 		}
 		printf("Frame %d is parsed!\n", imageInfo.FrameBase);
 
@@ -120,11 +116,15 @@ int VideoToFile(const char* videoPath, const char* filePath)
 	if (ret == 0)
 	{
 		th.join();	// 结束子线程
+
+		if(useHammingcode)ErrorCode::DecodeErrorCorrectionCode(outputFile);
+		FILE* fp_res = fopen("res.txt", "w");
+		fprintf(fp_res, "Video Parse is success.\nFile Size:%lldB\nTotal Frame:%d\n", outputFile.size(), precode);
+		fclose(fp_res);
+		outputFile.push_back('\0');
 		printf("\nVideo Parse is success.\nFile Size:%lldB\nTotal Frame:%d\n", outputFile.size(), precode);
 		FILE* fp = fopen(filePath, "wb");
 		if (fp == nullptr) return 1;
-		ErrorCode::DecodeErrorCorrectionCode(outputFile);
-		outputFile.push_back('\0');
 		fwrite(outputFile.data(), sizeof(unsigned char), outputFile.size() - 1, fp);
 		fclose(fp);
 		return ret;
@@ -136,76 +136,6 @@ int VideoToFile(const char* videoPath, const char* filePath)
 
 int main(int argc, char* argv[])
 {
-	const char* filepath = "2258.bin";
-
-	const char* videopath = "1.mp4";
-	const char* filepath1 = "test1.bin";
-	FileToVideo(filepath, videopath);
-	// 测试视频转图片
-	VideoToFile(videopath, filepath1);
-	/*cv::Mat srcImg = cv::imread(filepath, 1),disImg;
-	cv::imshow("1", srcImg);
-	cv::waitKey(0);
-	ImgParse::Main(srcImg, disImg);
-	cv::imshow("1", disImg);
-	cv::waitKey(0);
-	ImageDecode::ImageInfo imageInfo;
-	bool ans = ImageDecode::Main(disImg, imageInfo);
-	std::cout << imageInfo.FrameBase << std::endl;*/
-	//system("rd /s /q inputImg");
-	//system("md inputImg");
-	// 设置一个新线程以完成视频到图片的转换
-	//FFMPEG::VideotoImage(videopath, "inputImg", "jpg");
+	FileToVideo(argv[1], argv[2], std::stoi(argv[3]), std::stoi(argv[4]), std::stoi(argv[5]));
 	return 0;
 }
-
-
-//int main(int argc, char* argv[])
-//{
-//	constexpr bool type = true;
-//	//type==true 将文件编码为视频  命令行参数 ： 输入文件路径 输出视频路径 最长视频时长
-//	//type==false 将视频编码为文件 命令行参数 ： 输入视频路径 输出图片路径
-//	if constexpr(type)
-//	{
-//		if (argc == 4)
-//			return FileToVideo(argv[1], argv[2], std::stoi(argv[3]));
-//		else if (argc == 5)
-//			return FileToVideo(argv[1], argv[2], std::stoi(argv[3]), std::stoi(argv[4]));
-//	}
-//	else
-//	{
-//		if (argc == 3)
-//			return VideoToFile(argv[1], argv[2]);
-//	}
-//	puts("argument error,please check your argument");
-//	return 1;
-//}
-
-
-//该主函数用于测试二维码的定位和裁剪
-//int main() {
-//	for (int i = 1; i < 15; i++)
-//	{
-//		char imgName[256];
-//		//snprintf(imgName, 256, "C:\\Users\\TingLans\\Desktop\\outputImg\\%05d.png", i);
-//		snprintf(imgName, 256, "C:\\Users\\24365\\Desktop\\myImg\\%05d.jpg", i);
-//
-//
-//		cv::Mat srcImg = cv::imread(imgName, 1), disImg;
-//
-//		if (srcImg.empty()) {
-//			std::cerr << "Failed to open image file" << std::endl;
-//			return 1;
-//		}
-//
-//		ImgParse::Main(srcImg, disImg);
-//
-//		cv::imshow("disImg", srcImg);
-//		cv::waitKey(0);
-//		cv::imshow("disImg", disImg);
-//		cv::waitKey(0);
-//
-//
-//	}
-//	return 0;
-//}

@@ -21,10 +21,8 @@ namespace ImgParse
 		return tempImg;
 	}
 
-	//找到所提取轮廓的中心点
 	Point2f CalRectCenter(const vector<Point>& contours)
 	{
-		//在提取的中心小正方形的边界上每隔周长个像素提取一个点的坐标，求所提取四个点的平均坐标（即为小正方形的大致中心）
 		float centerx = 0, centery = 0;
 		int n = contours.size();
 		centerx = (contours[n / 4].x + contours[n * 2 / 4].x + contours[3 * n / 4].x + contours[n - 1].x) / 4;
@@ -43,7 +41,7 @@ namespace ImgParse
 		return (ax * by - bx * ay) > 0;
 		//如果点2位于点1的顺时针方向，返回真，否则返回假
 	}
-	//计算以point0为顶点，三个点构成的角度
+
 	float Cal3PointAngle(const Point& point0, const Point& point1, const Point& point2)
 	{
 		float dx1 = point1.x - point0.x, dy1 = point1.y - point0.y;
@@ -51,9 +49,9 @@ namespace ImgParse
 		return acos((dx1 * dx2 + dy1 * dy2) / sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10f)) * 180.0f / 3.141592653f;
 	}
 	Mat CropRect(const Mat& srcImg, const RotatedRect& rotatedRect)
-	{   //从图像中裁剪出一个矩形（可带角度）
+	{   
 		cv::Mat srcPoints, disImg;
-		boxPoints(rotatedRect, srcPoints);//得到该矩阵的四点，并存储在srcPoints中
+		boxPoints(rotatedRect, srcPoints);
 		vector<Point2f> dis_points =
 		{
 			Point2f(0,rotatedRect.size.height - 1),
@@ -61,7 +59,7 @@ namespace ImgParse
 			Point2f(rotatedRect.size.width - 1,0),
 			Point2f(rotatedRect.size.width - 1,rotatedRect.size.height - 1)
 		};//初始化目标矩阵的四点，其大小取决于初始矩阵（长宽不变）
-		auto M = getPerspectiveTransform(srcPoints, dis_points); //计算变换矩阵，将src四个点圈出的矩形投射到dis_point圈出的矩形中
+		auto M = getPerspectiveTransform(srcPoints, dis_points); 
 		warpPerspective(srcImg, disImg, M, rotatedRect.size); //进行透视变换以完成裁剪
 #ifdef FIND_QRPOINT_DEBUG
 		Show_Img(disImg);
@@ -72,12 +70,12 @@ namespace ImgParse
 	{
 		return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 	}
-	//通过三个点的坐标计算出第四个点的坐标
+
 	Point CalForthPoint(const Point& poi0, const Point& poi1, const Point& poi2)
 	{
 		return Point(poi2.x + poi1.x - poi0.x, poi2.y + poi1.y - poi0.y);
 	}
-	//计算∠p1p0p2的长度为bias的外角平分向量
+
 	pair<float, float> CalExtendVec(const Point2f& poi0, const Point2f& poi1, const Point2f& poi2, float bias)
 	{
 		float dis0 = distance(poi0, poi1), dis1 = distance(poi0, poi2);
@@ -87,7 +85,7 @@ namespace ImgParse
 		float totx = x1 + x2, toty = y1 + y2, distot = sqrt(totx * totx + toty * toty);
 		return { totx / distot * bias, toty / distot * bias };
 	}
-	//从图像中将一个四边形透视变换为矩形(需要四个点）由点转换为Mat
+
 	Mat CropParallelRect(const Mat& srcImg, const vector<Point2f>& srcPoints, Size size = { 0,0 })
 	{
 		cv::Mat disImg;
@@ -150,22 +148,22 @@ namespace ImgParse
 			return (a - avg) * (a - avg) + (b - avg) * (b - avg) + (c - avg) * (c - avg);
 			//其实应该除以三，但是都没除三也不影响比较大小。
 		}
-		//判断黑白比例是否合法
+
 		bool IsQrBWRateLegal(const float rate)
 		{
 			return rate < MaxQRBWRate && rate > MinQRBWRate;
 			// 理想情况rate=1.0，实际可能在一定范围内波动。
 		}
-		//定位点黑白条纹预处理函数
+
 		bool BWRatePreprocessing(Mat& image, vector<int>& vValueCount)
 		{
 			int count = 0, nc = image.cols * image.channels(), nr = image.rows / 2;
-			uchar lastColor = 0, * data = image.ptr<uchar>(nr); //data指向nr指向的一行，即中间行
+			uchar lastColor = 0, * data = image.ptr<uchar>(nr); 
 			for (int i = 0; i < nc; i++)      //计算条纹数量以及各个条纹的像素数目
 			{
 				uchar color = data[i];
 				if (color > 0)
-					color = 255;//只要不是黑色就是白色
+					color = 255;
 				if (i == 0)
 				{
 					lastColor = color;
@@ -182,8 +180,8 @@ namespace ImgParse
 					lastColor = color;
 				}
 			}
-			if (count) vValueCount.push_back(count); //每个count值保存条纹的宽度
-			bool ans = vValueCount.size() >= 5; //五个条纹，黑白黑白黑
+			if (count) vValueCount.push_back(count); 
+			bool ans = vValueCount.size() >= 5; 
 #ifdef FIND_QRPOINT_DEBUG
 			printf(ans ? "Preprocess Passed!" : "Preprocess Failed!");
 #endif   
@@ -199,7 +197,7 @@ namespace ImgParse
 			vector<int> vValueCount;
 			if (!BWRatePreprocessing(image, vValueCount)) //未通过预处理，不是识别点
 				return false;
-			//横向黑白比例1:1:3:1:1
+
 			int index = -1, maxCount = -1;
 			for (int i = 0; i < vValueCount.size(); i++)
 			{
@@ -217,7 +215,7 @@ namespace ImgParse
 			//左边 右边 都有两个值，才行
 			if (index < 2 || (vValueCount.size() - index) < 3)
 				return false;
-			//黑白比例1:1:3:1:1测试
+
 
 			float rate = ((float)maxCount) / 3.00;//以中间的比例3为基准
 			bool checkTag = 1;
@@ -289,7 +287,7 @@ namespace ImgParse
 #endif
 		}
 
-		//本函数判断输入的vector<Point>是否是二维码识别点
+
 		bool IsQrPoint(const vector<Point>& contour, const Mat& img)
 		{
 #ifdef FIND_QRPOINT_DEBUG
@@ -297,13 +295,13 @@ namespace ImgParse
 			printf("\nPOINT %d:\n\t", TestCaseNumber / 2);
 #endif
 			RotatedRect rotatedRect = minAreaRect(contour);
-			//计算最小覆盖矩形
+
 			cv::Mat cropImg = CropRect(img, rotatedRect);
-			//将二维码从整个图上抠出来
+
 			if (!IsQrSizeLegal(rotatedRect.size, img.size())) return false;
-			//判断尺寸是否合法
+
 			return IsQrBWRate(cropImg);
-			//判断黑白比例是否合法
+
 		}
 
 		//输入图像预处理函数 转换为灰度图，进行模糊处理，然后再转换为二值图
@@ -315,10 +313,11 @@ namespace ImgParse
 			Show_Img(tmpImg);
 #endif		
 			//模糊全图，减少高频信息的干扰（尤其是摩尔纹）
-			// TODO: 可以考虑采用更好的滤波方式
-			float BlurSize = 1.0 + srcImg.rows * blurRate; //计算图像模糊核的大小
 
-			blur(tmpImg, tmpImg, Size2f(BlurSize, BlurSize));
+			float BlurSize = 1.0 + srcImg.rows * blurRate; 
+			float BlurSize_1 = 1.0 + srcImg.cols * blurRate; 
+
+			blur(tmpImg, tmpImg, Size2f(BlurSize, BlurSize_1));
 #ifdef FIND_QRPOINT_DEBUG
 			Show_Img(tmpImg);
 #endif		
@@ -332,10 +331,6 @@ namespace ImgParse
 		bool ScreenQrPoint(const Mat& srcImg, vector<vector<Point>>& qrPoints)
 		{
 			vector<vector<Point> > contours;
-			/**
-			* hierarchy[i][0]，hierarchy[i][1]，hierarchy[i][2]，hierarchy[i][3]分别表示轮廓(contour[i])的后一个轮廓、前一个轮廓、子轮廓和父轮廓的索引
-			* 如果没有对应的后一个、前一个、子、父轮廓，则相应的索引值为-1。
-			**/
 			vector<Vec4i> hierarchy;
 			findContours(srcImg, contours, hierarchy, RETR_TREE, CHAIN_APPROX_NONE, Point(0, 0));
 			//通过黑色定位角作为父轮廓，有两个子轮廓的特点，筛选出三个定位角
@@ -397,8 +392,6 @@ namespace ImgParse
 		bool DumpExcessQrPoint(vector<vector<Point>>& qrPoints)
 		{	//目前的实现：排序后计算面积存在直角的方差最接近的三个点
 			//可能以后有更好的实现？？
-			// 
-			//将 qrPoints 中的子向量按照它们包含的点数从小到大排序
 			sort(
 				qrPoints.begin(), qrPoints.end(),
 				[](const vector<Point>& a, const vector<Point>& b) {return a.size() < b.size(); }
@@ -520,10 +513,7 @@ namespace ImgParse
 				avglen += Points3Info[i].Rect.size.height;
 				avglen += Points3Info[i].Rect.size.width;
 			}
-			/**
-			* 得到的是要延伸的长度
-			* 6.0是因为要计算三个点的总长度，除以sqrt(2.0)得到半对角线长度，0.8是一个经验值，用于调整最终的平均长度
-			**/
+
 			avglen /= 6.0 * sqrt(2.0) * 0.8;
 			ret.push_back
 			(
@@ -691,7 +681,7 @@ namespace ImgParse
 		// 计算区分阈值
 		for (int i = 10; i < 100; ++i)
 		{
-			for (int j = 10; j < 100; ++j)
+			for (int j = 10; j < 180; ++j)
 			{
 				Vec3b& temp = mat.at<Vec3b>(i, j);
 				minVec[0] = min(minVec[0], (uint16_t)temp[0]);
@@ -732,7 +722,7 @@ namespace ImgParse
 			dfs(i, j + 1 * dir[0], limi, limj, dir, ispass, mat);
 		}
 	}
-	// 深搜+暴搜 自定义寻找轮廓的函数
+
 	vector<Point2f> FindConner(Mat& mat)
 	{
 		int dis = 0;
@@ -775,10 +765,10 @@ namespace ImgParse
 		{
 			for (int j = 0; j < 192; ++j)
 			{
-				int counter[8] = { 0 };
+				int counter[8] = {0};
 				for (int k = 4; k <= 5; ++k)
 				{
-					for (int l = 4; l <= 5; ++l)
+					for (int l = 2; l <= 5; ++l)
 					{
 						int id = 0;
 						const auto& vec = mat.at<Vec3b>(i * 10 + k, j * 10 + l);
@@ -816,6 +806,7 @@ namespace ImgParse
 			if (FindForthPoint(PointsInfo)) return 1;
 			//一阶裁剪，完成初步筛选
 			temp = CropParallelRect(srcImg, AdjustForthPoint(PointsInfo, 0)); //裁剪一个包含有效区域的矩形，用于下一次裁剪
+
 #ifdef FIND_QRPOINT_DEBUG
 			Show_Img(temp);
 #endif 
@@ -826,20 +817,20 @@ namespace ImgParse
 			//二阶裁剪，完成实际映射，消除二阶像差
 			PointsInfo.clear();
 			//return 0;
-			//对temp进行二次裁剪
-			if (Main(temp, PointsInfo) || PointsInfo.size() < 4);//没有找到三个大定位点和可能是小定位点的轮廓
+
+			if (Main(temp, PointsInfo) || PointsInfo.size() < 4);
 			else
-			{//成果找到三个大定位点和可能是小定位点的轮廓
-				if (FindForthPoint(PointsInfo)) return 0; //在定位结果中未找到第四个定位点，直接输出disImg
-				disImg = CropParallelRect(temp, AdjustForthPoint(PointsInfo, 1)); //找到第四个定位点，进行精确裁剪
+			{
+				if (FindForthPoint(PointsInfo)) return 0; 
+				disImg = CropParallelRect(temp, AdjustForthPoint(PointsInfo, 1));
 			}
-			//Show_Img(disImg);
 			//如果二阶裁剪失败根据一阶裁剪的信息返回一个不知道是否精确的结果。
 			//三阶微调，完成最终矫正
 			disImg.copyTo(temp);
 			
 			cv::resize(temp, temp, Size(1920, 1080));
-			GetVec(temp);//锐化处理
+			GetVec(temp);
+
 			auto poi4 = FindConner(temp); //手动寻找地位点
 			if (poi4.size() != 4) return 1;
 			
@@ -851,8 +842,11 @@ namespace ImgParse
 #ifdef FIND_QRPOINT_DEBUG
 		Show_Img(disImg);
 #endif 
+
 		GetVec(disImg);
+
 		Resize(disImg);
+
 #ifdef FIND_QRPOINT_DEBUG
 		Show_Img(disImg);
 #endif 
