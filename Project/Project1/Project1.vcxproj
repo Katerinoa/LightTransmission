@@ -84,8 +84,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>D:\WorkSoftware\openCV\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>D:\WorkSoftware\openCV\opencv\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\CV\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\CV\opencv\build\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -142,7 +142,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>D:\WorkSoftware\openCV\opencv\build\x64\vc15\lib\opencv_world460.lib</AdditionalDependencies>
+      <AdditionalDependencies>D:\CV\opencv\build\x64\vc15\lib\opencv_world460.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

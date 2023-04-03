@@ -68,6 +68,9 @@ int VideoToFile(const char* videoPath, const char* filePath,bool useHammingcode=
 		} while (fp == nullptr && !isThreadOver);
 		if (fp == nullptr)
 		{
+			FILE* fp_res = fopen("res.txt", "w");
+			fprintf(fp_res, "Failed to open the video, is the video Incomplete?");
+			fclose(fp_res);
 			puts("failed to open the video, is the video Incomplete?");
 			ret = 1;
 			break;
@@ -137,6 +140,6 @@ int VideoToFile(const char* videoPath, const char* filePath,bool useHammingcode=
 
 int main(int argc, char* argv[])
 {
-	FileToVideo(argv[1], argv[2], std::stoi(argv[3]), std::stoi(argv[4]), std::stoi(argv[5]));
+	VideoToFile(argv[1], argv[2], std::stoi(argv[3]));
 	return 0;
 }

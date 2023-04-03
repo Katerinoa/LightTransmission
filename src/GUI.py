@@ -72,7 +72,8 @@ def play_video(file_path):
     cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("Video", 1920, 1080)
     cv2.moveWindow("Video", 0, 0)
-    times = video.get(7) / video.get(5)
+    if(video.get(5)):
+        times = video.get(7) / video.get(5)
     print(times)
     # Set up the progress bar parameters.
     bar_width = int(window_width)
@@ -129,7 +130,17 @@ def decode_video(useHamming):
     if (not os.path.exists(dir_path_in)):
         return
     video = cv2.VideoCapture(dir_path_in)
-    times = video.get(7) / video.get(5)
+    if video.get(5)!=0:
+        times = video.get(7) / video.get(5)
+    else:
+        layout1 = [[sg.Text('Please confirm your video\n is complete')]]
+        window2 = sg.Window('Error', layout1, size=(225, 80))
+        while True:
+            event2, values2 = window2.read()
+            if event2 == sg.WINDOW_CLOSED or event2 == 'No':
+                break
+        window2.close()
+        return
     os.chdir(py_file)
     cmd = 'decoder ' + dir_path_in + ' out.bin '+ useHamming
     sg.popup_quick_message('Decoding...', background_color='white')
@@ -137,6 +148,15 @@ def decode_video(useHamming):
     os.system(cmd)
     fp = open("./res.txt")
     res = fp.read()
+    if(res=='Failed to open the video, is the video Incomplete?'):
+        layout1 = [[sg.Text('Failed to open the video, is the video Incomplete?')]]
+        window2 = sg.Window('Error', layout1, size=(225, 80))
+        while True:
+            event2, values2 = window2.read()
+            if event2 == sg.WINDOW_CLOSED or event2 == 'No':
+                break
+        window2.close()
+        return
     outsize = os.path.getsize('./out.bin')
     print(outsize)
     rate = 0
