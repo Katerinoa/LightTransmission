@@ -1,4 +1,4 @@
-//Ö÷º¯Êı
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #include <iostream>
 #include <chrono>
 #include"parser.h"
@@ -13,8 +13,8 @@ using namespace std;
 	cv::imshow("DEBUG", src);\
 	cv::waitKey();\
 }while (0);
-//ÊÓÆµ×ªÍ¼Æ¬
-int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MAX, int fps = 15)
+//ï¿½ï¿½Æµ×ªÍ¼Æ¬
+int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MAX,bool useHamming=false,int fps = 10)
 {
 	FILE* fp = fopen(filePath, "rb");
 	if (fp == nullptr) return 1;
@@ -28,11 +28,9 @@ int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MA
 	fread(temp, 1, size, fp);
 	fclose(fp);
 	system("md outputImg");
-
-	//temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// º£Ã÷Âë
+	if(useHamming)temp = ErrorCode::EncodeErrorCorrectionCode(temp, size);				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 	Code::Main(temp, size, "outputImg", "png", 1LL * fps * timLim / 1000);
-
 	FFMPEG::ImagetoVideo("outputImg", "png", videoPath, fps, 60, 100000);
 
 	system("rd /s /q outputImg");
@@ -40,24 +38,25 @@ int FileToVideo(const char* filePath, const char* videoPath, int timLim = INT_MA
 	return 0;
 }
 
-//ÊÓÆµ×ªÍ¼Æ¬
-int VideoToFile(const char* videoPath, const char* filePath)
+//ï¿½ï¿½Æµ×ªÍ¼Æ¬
+int VideoToFile(const char* videoPath, const char* filePath,bool useHammingcode=false)
 {
 	char imgName[256];
+
 	system("rd /s /q inputImg");
 	system("md inputImg");
 	bool isThreadOver = false;
 
 	std::thread th([&] {FFMPEG::VideotoImage(videoPath, "inputImg", "jpg"); isThreadOver = true; });
 
-	// precodeÓÃÓÚºóĞøÖ¸Ã÷Ö¡µÄ±àºÅ£¬ÒÔÅĞ¶ÏÊÇ·ñ³öÏÖÌøÖ¡£¬»òÕß³öÏÖÏàÍ¬Ö¡
+	// precodeï¿½ï¿½ï¿½Úºï¿½ï¿½ï¿½Ö¸ï¿½ï¿½Ö¡ï¿½Ä±ï¿½Å£ï¿½ï¿½ï¿½ï¿½Ğ¶ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½ï¿½ï¿½ï¿½ï¿½Í¬Ö¡
 	int precode = -1;
 	std::vector<unsigned char> outputFile;
-	// hasStartedÓÃÓÚÖ¸Ã÷ÊÓÆµÊÇ·ñ¿ªÊ¼£¨×¢ÒâÕâÀïÖ¸µÄÊÓÆµÊÇÒª½âÂëµÄÊÓÆµ£¬Êµ¼ÊÅÄÉãµÄÊÓÆµ³¤¶È´óÓÚµÈÓÚÒª½âÂëµÄÊÓÆµ£©
+	// hasStartedï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Æµï¿½Ç·ï¿½Ê¼ï¿½ï¿½×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½È´ï¿½ï¿½Úµï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½
 	bool hasStarted = 0;
-	// retÖ¸Ã÷ÊÇ·ñ³öÏÖÌøÖ¡
+	// retÖ¸ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡
 	bool ret = 0;
-	std::this_thread::sleep_for(std::chrono::seconds(1)); // ÈÃ³ÌĞòÔİÍ£1ÃëÖÓ
+	std::this_thread::sleep_for(std::chrono::seconds(1)); // ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½Í£1ï¿½ï¿½ï¿½ï¿½
 	for (int i = 1;; ++i, system((std::string("del ") + imgName).c_str()))
 	{
 		printf("Reading Image %05d.jpg\n", i);
@@ -95,10 +94,10 @@ int VideoToFile(const char* videoPath, const char* filePath)
 				hasStarted = 1;
 			else continue;
 		}
-		// ºÍÇ°Ò»Ö¡ÏàÍ¬
+		// ï¿½ï¿½Ç°Ò»Ö¡ï¿½ï¿½Í¬
 		if (precode == imageInfo.FrameBase)
 			continue;
-		// ÊÓÆµ²»Á¬Ğø£¬³öÏÖÌøÖ¡£¬ÖÃretÎª1
+		// ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½retÎª1
 		if (((precode + 1) & UINT16_MAX) != imageInfo.FrameBase)
 		{
 			puts("error, there is a skipped frame,there are some images parsed failed.");
@@ -108,19 +107,21 @@ int VideoToFile(const char* videoPath, const char* filePath)
 		printf("Frame %d is parsed!\n", imageInfo.FrameBase);
 
 		precode = (precode + 1) & UINT16_MAX;
-		// ½«½âÂë³öÀ´µÄÄÚÈİĞ´Èëµ½Êä³öÎÄ¼şÖĞ
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ´ï¿½ëµ½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
 		for (auto& e : imageInfo.Info)
 			outputFile.push_back(e);
-		// ´¦Àíµ½ÁË×îºóÒ»Ö¡
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ö¡
 		if (imageInfo.IsEnd)
 			break;
 	}
 	if (ret == 0)
 	{
-		th.join();	// ½áÊø×ÓÏß³Ì
+		th.join();	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½
 
-		//ErrorCode::DecodeErrorCorrectionCode(outputFile);
-
+		if(useHammingcode)ErrorCode::DecodeErrorCorrectionCode(outputFile);
+		FILE* fp_res = fopen("res.txt", "w");
+		fprintf(fp_res, "Video Parse is success.\nFile Size:%lldB\nTotal Frame:%d\n", outputFile.size(), precode);
+		fclose(fp_res);
 		outputFile.push_back('\0');
 		printf("\nVideo Parse is success.\nFile Size:%lldB\nTotal Frame:%d\n", outputFile.size(), precode);
 		FILE* fp = fopen(filePath, "wb");
@@ -136,15 +137,6 @@ int VideoToFile(const char* videoPath, const char* filePath)
 
 int main(int argc, char* argv[])
 {
-	bool flag = 1;//0±àÂë 1½âÂë
-	const char* filepath = "E:\\Projects\\LightTransmission\\Project1\\Project1\\test\\01.bin";//Òª×ª»»³ÉÊÓÆµµÄ¶ş½øÖÆÎÄ¼ş
-	const char* videopath = "ShotVedio02.mp4";
-	const char* filepath1 = "result.bin";//½âÎöÉú³ÉµÄ¶ş½øÖÆÎÄ¼ş
-	const char* videopath1 = "ShotVedio01.mp4";
-
-	if (!flag)
-		FileToVideo(filepath, videopath, 5000, 20);
-	else
-		VideoToFile(videopath1, filepath1);
+	FileToVideo(argv[1], argv[2], std::stoi(argv[3]), std::stoi(argv[4]), std::stoi(argv[5]));
 	return 0;
 }
