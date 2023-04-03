@@ -104,6 +104,9 @@ int VideoToFile(const char* videoPath, const char* filePath,bool useHammingcode=
 		if (((precode + 1) & UINT16_MAX) != imageInfo.FrameBase)
 		{
 			puts("error, there is a skipped frame,there are some images parsed failed.");
+			FILE* fp_res = fopen("res.txt", "w");
+			fprintf(fp_res, "error, there is a skipped frame,there are some images parsed failed.");
+			fclose(fp_res);
 			ret = 1;
 			break;
 		}
@@ -123,10 +126,10 @@ int VideoToFile(const char* videoPath, const char* filePath,bool useHammingcode=
 
 		if(useHammingcode)ErrorCode::DecodeErrorCorrectionCode(outputFile);
 		FILE* fp_res = fopen("res.txt", "w");
-		fprintf(fp_res, "Video Parse is success.\nFile Size:%lldB\nTotal Frame:%d\n", outputFile.size(), precode);
+		fprintf(fp_res, "Video Parse is success.\nFile Size:%lldb\nTotal Frame:%d\n", outputFile.size(), precode);
 		fclose(fp_res);
 		outputFile.push_back('\0');
-		printf("\nVideo Parse is success.\nFile Size:%lldB\nTotal Frame:%d\n", outputFile.size(), precode);
+		printf("\nVideo Parse is success.\nFile Size:%lldb\nTotal Frame:%d\n", outputFile.size(), precode);
 		FILE* fp = fopen(filePath, "wb");
 		if (fp == nullptr) return 1;
 		fwrite(outputFile.data(), sizeof(unsigned char), outputFile.size() - 1, fp);
