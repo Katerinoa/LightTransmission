@@ -10,18 +10,20 @@ py_file = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 
 def wrong(reason):
-    layout1 = [[sg.Text(reason,background_color='#FFF0F5',text_color='#000000')]]
-    window2 = sg.Window('Error', layout1, size=(225, 40),button_color='#FFC0CB', background_color='#FFF0F5')
+    layout1 = [[sg.Text(reason, background_color='#FFF0F5', text_color='#000000')],
+               [sg.Button('OK',key='Ok',size=(25,1))]]
+    window2 = sg.Window('Error', layout1, size=(225, 80), button_color='#FFC0CB', background_color='#FFF0F5')
     while True:
         event2, values2 = window2.read()
-        if event2 == sg.WINDOW_CLOSED or event2 == 'No':
+        if event2 == sg.WINDOW_CLOSED or event2=='Ok':
             break
     window2.close()
 
 
 def code(maxFrame, useHamming, fps):
     dir_path = ''
-    dir_path = sg.popup_get_file("Please select the file",background_color='#FFF0F5',text_color='#000000',button_color='#FFC0CB')
+    dir_path = sg.popup_get_file("Please select the file", background_color='#FFF0F5', text_color='#000000',
+                                 button_color='#FFC0CB')
     if not dir_path:
         return
     if not os.path.exists(dir_path):
@@ -31,7 +33,7 @@ def code(maxFrame, useHamming, fps):
         os.remove(py_file + "\\in.mp4")
     print("code:" + py_file + "\\in.mp4")
     cmd = 'encoder ' + dir_path + ' in.mp4 ' + str(maxFrame) + useHamming + ' ' + fps
-    sg.popup_quick_message('Encoding...', background_color='white')
+    sg.popup_quick_message('Encoding...', background_color='white',text_color='#000000')
     os.chdir(py_file)
     print("code:" + cmd)
     os.system(cmd)
@@ -40,10 +42,10 @@ def code(maxFrame, useHamming, fps):
 
 
 def confirm_play_video(video_path):
-    layout1 = [[sg.Text('Do you need to play the video?')],
+    layout1 = [[sg.Text('Do you need to play the video?',background_color='#FFF0F5', text_color='#000000')],
                [sg.Button('Yes', size=(11, 2)), sg.Button('No', size=(11, 2))]]
 
-    window2 = sg.Window('Finished', layout1, size=(225, 80))
+    window2 = sg.Window('Finished', layout1, size=(225, 80),background_color='#FFF0F5',button_color='#FFC0CB')
     while True:
         event2, values2 = window2.read()
         if event2 == sg.WINDOW_CLOSED or event2 == 'No':
@@ -57,8 +59,8 @@ def confirm_play_video(video_path):
 
 def play_video(file_path):
     if not file_path:
-        file_path = sg.popup_get_file("Please select the video",background_color='#FFF0F5',
-                                      button_color='#FFC0CB',text_color='#000000')
+        file_path = sg.popup_get_file("Please select the video", background_color='#FFF0F5',
+                                      button_color='#FFC0CB', text_color='#000000')
     if not file_path:
         wrong("Please select the video.")
         return
@@ -117,7 +119,8 @@ def play_video(file_path):
 def decode_video(useHamming):
     if not useHamming:
         return
-    dir_path_in = sg.popup_get_file('Please select the video',background_color='#FFF0F5',text_color='#000000',button_color='#FFC0CB')
+    dir_path_in = sg.popup_get_file('Please select the video', background_color='#FFF0F5', text_color='#000000',
+                                    button_color='#FFC0CB')
     if not dir_path_in:
         wrong('Please select the video')
         return
@@ -136,7 +139,7 @@ def decode_video(useHamming):
         return
     os.chdir(py_file)
     cmd = 'decoder ' + dir_path_in + ' out.bin ' + useHamming
-    sg.popup_quick_message('Decoding...', background_color='white')
+    sg.popup_quick_message('Decoding...', background_color='white',text_color='#000000')
     print("decode:" + cmd)
     os.system(cmd)
     fp = open("./res.txt")
@@ -145,21 +148,28 @@ def decode_video(useHamming):
         wrong('Is the video Incomplete?')
         return
     elif res == 'error, there is a skipped frame,there are some images parsed failed.':
-        wrong('There is a skipped frame,some images parsed failed.')
+        wrong('There is a skipped frame\nsome images parsed failed.')
+        return
+    elif res=='':
+        wrong('Something is wrong with video')
+        return
     if not os.path.exists('./out.bin'):
         wrong('Missing output')
+        return
     outsize = os.path.getsize('./out.bin')
 
     rate = 0
+    if times >= 5:
+        times = 5
     res += "VideoTime:" + str(round(times, 2)) + 's\n'
     if times != 0:
         rate = round(outsize / times * 8 / 1024, 2)
 
     if rate != 0:
         res += "Rate:" + str(rate) + "kb/s"
-    layout2 = [[sg.Text(res)],
+    layout2 = [[sg.Text(res, background_color='#FFF0F5', text_color='#000000')],
                [sg.Button('OK')]]
-    window3 = sg.Window('Finished', layout2, size=(225, 100))
+    window3 = sg.Window('Finished', layout2, size=(225, 100), button_color='#FFC0CB', background_color='#FFF0F5')
     while True:
         event3, values3 = window3.read()
         if event3 == sg.WINDOW_CLOSED or event3 == 'OK':
@@ -171,15 +181,15 @@ def code_window():
     fpslist = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
     in_put = sg.Input(size=(10, 5), key='In', default_text='5000')
     text = sg.Text('  Max Video Time(ms)', size=(18, 1),
-                   background_color='#FFC0CB',text_color='#FFFFFF')
+                   background_color='#FFC0CB', text_color='#FFFFFF')
     check = sg.Checkbox('Use Hamming Code', size=(15, 1),
-                    key='use',background_color='#FFC0CB',text_color='#FFFFFF')
+                        key='use', background_color='#FFC0CB', text_color='#FFFFFF')
     comb = sg.Combo(fpslist, key='comb', default_value='FPS', size=(15, 1))
     encode2 = sg.Button('Encode', size=(30, 2))
     layout2 = [[text, in_put],
                [check, comb],
                [encode2]]
-    window2 = sg.Window('Encode', layout2, size=(265, 120),background_color='#FFF0F5',button_color='#FFC0CB')
+    window2 = sg.Window('Encode', layout2, size=(265, 120), background_color='#FFF0F5', button_color='#FFC0CB')
     while True:
         event2, values2 = window2.read()
         if event2 == 'Encode':
@@ -203,11 +213,12 @@ def code_window():
 
 
 def decode_window():
-    check = sg.Checkbox('Use Hamming Code', size=(39, 1), key='use',background_color='#FFC0CB',text_color='#FFFFFF')
+    check = sg.Checkbox('Use Hamming Code', size=(39, 1), key='use', background_color='#FFC0CB', text_color='#FFFFFF')
     decode2 = sg.Button('Decode', size=(39, 1))
     layout2 = [[check],
                [decode2]]
-    window2 = sg.Window('Decode', layout2, size=(265, 80),background_color='#FFF0F5',button_color='#FFC0CB')
+    window2 = sg.Window('Decode', layout2, size=(265, 80), background_color='#FFF0F5', button_color='#FFC0CB')
+    useHamming=''
     while True:
         event2, values2 = window2.read()
         if event2 == 'Decode':
@@ -215,31 +226,38 @@ def decode_window():
                 useHamming = ' 1'
             else:
                 useHamming = ' 0'
-            decode_video(useHamming)
             break
         elif event2 == sg.WINDOW_CLOSED:
             break
     window2.close()
+    return useHamming
 
 
 if __name__ == '__main__':
-    encode = sg.Button('Encode', size=(13, 3))
-    decode = sg.Button('Decode', size=(13, 3))
-    play = sg.Button('PlayVideo', size=(39, 3))
 
-    layout = [
-        [encode, decode],
-        [play]
-    ]
-    window = sg.Window('LightTransmission', layout, size=(265, 145),button_color='#FFC0CB', background_color='#FFF0F5')
+
+
     while True:
+        encode = sg.Button('Encode', size=(13, 3))
+        decode = sg.Button('Decode', size=(13, 3))
+        play = sg.Button('PlayVideo', size=(39, 3))
+        layout = [
+            [encode, decode],
+            [play]
+        ]
+        window = sg.Window('LightTransmission', layout, size=(265, 145), button_color='#FFC0CB',background_color='#FFF0F5')
         event, values = window.read()
         if event == 'Encode':
+            window.close()
             code_window()
         elif event == 'Decode':
-            decode_window()
+            window.close()
+            useHamming=decode_window()
+            decode_video(useHamming)
         elif event == 'PlayVideo':
+            window.close()
             play_video('')
         elif event == sg.WINDOW_CLOSED:
+            window.close()
             break
-    window.close()
+
